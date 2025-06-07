@@ -18,9 +18,17 @@ import { WalletMultiButton } from "@/components/wallet-multi-button";
 import CreateLoanNFT from "@/components/create_loan"
 import GetToken from "@/components/Get_Token";
 
+import CreateOffer from "@/components/ui/create_offer";
+import AcceptOffer from "@/components/accept_offer";
+import GetAcceptedOffers from "@/components/get_accepted_offers";
+import GetUnacceptedTokens from "@/components/get_unaccepted_tokens"
 
 
-<TabsTrigger value="gettokens">Get Tokens</TabsTrigger>
+
+
+
+
+
 
 
 export default function DashboardPage() {
@@ -42,8 +50,13 @@ export default function DashboardPage() {
             <TabsTrigger value="connections">Bank Connections</TabsTrigger>
             <TabsTrigger value="onchain">On-Chain Activity</TabsTrigger>
             <TabsTrigger value="proofs">ZK Proofs</TabsTrigger>
-            <TabsTrigger value="mint">Mint NFT</TabsTrigger>
-            <TabsTrigger value="gettokens">Get Tokens</TabsTrigger>
+          <TabsTrigger value="create-offer">Create Offer</TabsTrigger>
+          <TabsTrigger value="unaccepted-tokens">Unaccepted Tokens</TabsTrigger>
+          <TabsTrigger value="accept-offer">Accept Offer</TabsTrigger>
+          <TabsTrigger value="accepted-offers">Accepted Offers</TabsTrigger>
+           <TabsTrigger value="create-loan">Create Loan NFT</TabsTrigger>
+            <TabsTrigger value="get-loan">Get Loan NFT</TabsTrigger>
+
 
           </TabsList>
           
@@ -153,27 +166,65 @@ export default function DashboardPage() {
             <ProofGenerator />
           </TabsContent>
 
-<TabsContent value="mint" className="space-y-4">
-  <Card>
-    <CardHeader>
-      <CardTitle>Mint a Loan NFT</CardTitle>
-    </CardHeader>
-    <CardContent>
-      <CreateLoanNFT />
-    </CardContent>
-  </Card>
-</TabsContent>
+          <TabsContent value="create-offer" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Create NFT Offer</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CreateOffer />
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-<TabsContent value="gettokens" className="space-y-4">
-  <Card>
-    <CardHeader>
-      <CardTitle>Get XRPL NFTs</CardTitle>
-    </CardHeader>
-    <CardContent>
-      <GetToken />
-    </CardContent>
-  </Card>
-</TabsContent>
+          <TabsContent value="accept-offer" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Accept NFT Offer</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <AcceptOffer />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="accepted-offers" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Accepted Offers</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <GetAcceptedOffers />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="unaccepted-tokens" className="space-y-4">
+            <GetUnacceptedTokens />
+          </TabsContent>
+
+
+          <TabsContent value="create-loan" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Create Loan NFT</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CreateLoanNFT />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="get-loan" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Get Loan NFT</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <GetToken />
+              </CardContent>
+            </Card>
+          </TabsContent>
 
 
 
