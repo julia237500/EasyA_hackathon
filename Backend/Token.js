@@ -1,56 +1,76 @@
 async function getTokens() {
-  // Sender's wallet to get tokens owned by sender
   const send_wallet = xrpl.Wallet.fromSeed(sendSeedField.value)
+  const receive_wallet = xrpl.Wallet.fromSeed(receiveSeedField.value)
   const net = getNet()
   const client = new xrpl.Client(net)
 
   let results = 'Connecting to ' + net + '...'
   sendResultField.value = results
+  receiveResultField.value = results
 
   await client.connect()
-  results += '\nConnected. Getting NFTs...'
-  sendResultField.value = results
+  results += '\nConnected.'
 
-  const nftsResponse = await client.request({
-    method: "account_nfts",
-    account: send_wallet.classicAddress
-  })
+  // Function to get NFT info for a wallet
+  async function getNftInfo(wallet, label) {
+    let output = `\n\n NFTs for ${label} (${wallet.classicAddress}):\n`
 
-  const nfts = nftsResponse.result.account_nfts
+    try {
+      const nftsResponse = await client.request({
+        method: "account_nfts",
+        account: wallet.classicAddress
+      })
 
-  results += '\n\nFound ' + nfts.length + ' NFTs.\n'
+      const nfts = nftsResponse.result.account_nfts
+      output += `Found ${nfts.length} NFTs.\n`
 
-  for (let i = 0; i < nfts.length; i++) {
-    const nft = nfts[i]
-    results += `\nNFT ${i + 1}:\n`
-    results += `  TokenID: ${nft.NFTokenID}\n`
-    results += `  URI (hex): ${nft.URI}\n`
+      for (let i = 0; i < nfts.length; i++) {
+        const nft = nfts[i]
+        output += `\nNFT ${i + 1}:\n`
+        output += `  TokenID: ${nft.NFTokenID}\n`
+        output += `  URI (hex): ${nft.URI}\n`
 
-    if (nft.URI) {
-      try {
-        const uriString = xrpl.convertHexToString(nft.URI)
-        const metadata = JSON.parse(uriString)
+        if (nft.URI) {
+          try {
+            const uriString = xrpl.convertHexToString(nft.URI)
+            const metadata = JSON.parse(uriString)
 
-        results += `  Decoded Metadata:\n`
-        results += `    Loan ID: ${metadata.loanId}\n`
-        results += `    Amount: ${metadata.amount}\n`
-        results += `    Currency: ${metadata.currency}\n`
-        results += `    Date: ${new Date(metadata.date).toLocaleString()}\n`
-        results += `    Credit Score Impact: ${metadata.creditScoreImpact}\n`
-        results += `    Bank ID: ${metadata.bankId}\n`
-        results += `    Token URL: ${metadata.tokenUrlField}\n`
-      } catch (err) {
-        results += `  Error decoding metadata: ${err.message}\n`
+            output += `  Decoded Metadata:\n`
+            output += `    Loan ID: ${metadata.loanId}\n`
+            output += `    Amount: ${metadata.amount}\n`
+            output += `    Currency: ${metadata.currency}\n`
+            output += `    Date: ${new Date(metadata.date).toLocaleString()}\n`
+            output += `    Bank ID: ${metadata.bankId}\n`
+            output += `    Token URL: ${metadata.tokenUrlField}\n`
+            
+            //  Show sender address if it exists in metadata
+            if (metadata.senderAddress) {
+              output += `    Sender Address: ${metadata.senderAddress}\n`
+            }
+
+          } catch (err) {
+            output += `  Error decoding metadata: ${err.message}\n`
+          }
+        } else {
+          output += `  No URI metadata found.\n`
+        }
       }
-    } else {
-      results += `  No URI metadata found.\n`
+    } catch (err) {
+      output += `\nError fetching NFTs: ${err.message}`
     }
+
+    return output
   }
 
-  sendResultField.value = results
+  const senderInfo = await getNftInfo(send_wallet, 'Sender')
+  const receiverInfo = await getNftInfo(receive_wallet, 'Receiver')
+
+  sendResultField.value = results + senderInfo
+  receiveResultField.value = results + receiverInfo
 
   client.disconnect()
 }
+
 
 async function burnToken() {
   // Sender burns token owned by sender

@@ -8,107 +8,115 @@ import { Label } from "@/components/ui/label"
 import * as xrpl from "xrpl"
 
 export default function CreateLoanNFT() {
-  const [standbySeed, setStandbySeed] = useState("")
-  const [loanId, setLoanId] = useState("")
-  const [amount, setAmount] = useState("")
-  const [currency, setCurrency] = useState("USD")
-  const [date, setDate] = useState("")
-  const [impact, setImpact] = useState("")
-  const [bankId, setBankId] = useState("")
-  const [tokenUrl, setTokenUrl] = useState("")
-  const [result, setResult] = useState("")
+  const [sendSeed, setSendSeed] = useState("")
+  const [receiveSeed, setReceiveSeed] = useState("")
+  const [sendResult, setSendResult] = useState("")
+  const [receiveResult, setReceiveResult] = useState("")
 
   const getNet = () => "wss://s.altnet.rippletest.net:51233"
 
-  const createToken = async () => {
+  const getTokens = async () => {
     try {
-      const standby_wallet = xrpl.Wallet.fromSeed(standbySeed)
-      const client = new xrpl.Client(getNet())
+      const send_wallet = xrpl.Wallet.fromSeed(sendSeed)
+      const receive_wallet = xrpl.Wallet.fromSeed(receiveSeed)
+      const net = getNet()
+      const client = new xrpl.Client(net)
 
-      let output = "Connecting to XRPL Testnet..."
-      setResult(output)
+      let results = "Connecting to " + net + "..."
+      setSendResult(results)
+      setReceiveResult(results)
 
       await client.connect()
-      output += "\nConnected. Creating NFT..."
+      results += "\nConnected."
 
-      // Create metadata
-      const metadata = {
-        loanId,
-        amount,
-        currency,
-        date: new Date(date).toISOString(),
-        creditScoreImpact: impact,
-        bankId,
-        tokenUrlField: tokenUrl,
+      async function getNftInfo(wallet: xrpl.Wallet, label: string) {
+        let output = `\n\nNFTs for ${label} (${wallet.classicAddress}):\n`
+
+        try {
+          const nftsResponse = await client.request({
+            method: "account_nfts",
+            account: wallet.classicAddress,
+          })
+
+          const nfts = nftsResponse.result.account_nfts
+          output += `Found ${nfts.length} NFTs.\n`
+
+          for (let i = 0; i < nfts.length; i++) {
+            const nft = nfts[i]
+            output += `\nNFT ${i + 1}:\n`
+            output += `  TokenID: ${nft.NFTokenID}\n`
+            output += `  URI (hex): ${nft.URI}\n`
+
+            if (nft.URI) {
+              try {
+                const uriString = xrpl.convertHexToString(nft.URI)
+                const metadata = JSON.parse(uriString)
+
+                output += `  Decoded Metadata:\n`
+                output += `    Loan ID: ${metadata.loanId}\n`
+                output += `    Amount: ${metadata.amount}\n`
+                output += `    Currency: ${metadata.currency}\n`
+                output += `    Date: ${new Date(metadata.date).toLocaleString()}\n`
+                output += `    Bank ID: ${metadata.bankId}\n`
+                output += `    Token URL: ${metadata.tokenUrlField}\n`
+
+                if (metadata.senderAddress) {
+                  output += `    Sender Address: ${metadata.senderAddress}\n`
+                }
+              } catch (err: any) {
+                output += `  Error decoding metadata: ${err.message}\n`
+              }
+            } else {
+              output += `  No URI metadata found.\n`
+            }
+          }
+        } catch (err: any) {
+          output += `\nError fetching NFTs: ${err.message}`
+        }
+
+        return output
       }
 
-      const uri = xrpl.convertStringToHex(JSON.stringify(metadata))
+      const senderInfo = await getNftInfo(send_wallet, "Sender")
+      const receiverInfo = await getNftInfo(receive_wallet, "Receiver")
 
-      const tx = await client.submitAndWait(
-        {
-          TransactionType: "NFTokenMint",
-          Account: standby_wallet.classicAddress,
-          URI: uri,
-          Flags: 8,
-          NFTokenTaxon: 0,
-        },
-        { wallet: standby_wallet }
-      )
+      setSendResult(results + senderInfo)
+      setReceiveResult(results + receiverInfo)
 
-      output += `\nTransaction result: ${(tx.result.meta as xrpl.TransactionMetadata).TransactionResult}`
-      output += `\nNFT minted successfully.\nMetadata: ${JSON.stringify(metadata, null, 2)}`
-      setResult(output)
-
-      client.disconnect()
+      await client.disconnect()
     } catch (err: any) {
-      setResult("Error creating NFT: " + err.message)
+      setSendResult("Error: " + err.message)
+      setReceiveResult("Error: " + err.message)
     }
   }
 
   return (
     <div className="space-y-4">
-      <h3 className="text-xl font-semibold">Create Loan NFT</h3>
+      <h3 className="text-xl font-semibold">Check Loan NFTs</h3>
 
       <div className="grid gap-4 md:grid-cols-2">
         <div>
-          <Label>Seed</Label>
-          <Input value={standbySeed} onChange={(e) => setStandbySeed(e.target.value)} />
+          <Label>Sender Seed</Label>
+          <Input value={sendSeed} onChange={(e) => setSendSeed(e.target.value)} />
         </div>
         <div>
-          <Label>Loan ID</Label>
-          <Input value={loanId} onChange={(e) => setLoanId(e.target.value)} />
-        </div>
-        <div>
-          <Label>Amount</Label>
-          <Input value={amount} onChange={(e) => setAmount(e.target.value)} />
-        </div>
-        <div>
-          <Label>Currency</Label>
-          <Input value={currency} onChange={(e) => setCurrency(e.target.value)} />
-        </div>
-        <div>
-          <Label>Date</Label>
-          <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-        </div>
-        <div>
-          <Label>Credit Score Impact</Label>
-          <Input value={impact} onChange={(e) => setImpact(e.target.value)} />
-        </div>
-        <div>
-          <Label>Bank ID</Label>
-          <Input value={bankId} onChange={(e) => setBankId(e.target.value)} />
-        </div>
-        <div>
-          <Label>Token URL</Label>
-          <Input value={tokenUrl} onChange={(e) => setTokenUrl(e.target.value)} />
+          <Label>Receiver Seed</Label>
+          <Input value={receiveSeed} onChange={(e) => setReceiveSeed(e.target.value)} />
         </div>
       </div>
 
-      <Button onClick={createToken}>Mint Loan NFT</Button>
+      <Button onClick={getTokens}>Get Tokens</Button>
 
-      {result && (
+      {sendResult && (
         <div className="whitespace-pre-wrap bg-muted p-4 rounded border text-sm mt-4">
-          {result}
+          <h4 className="font-semibold">Sender NFTs</h4>
+          {sendResult}
+        </div>
+      )}
+      {receiveResult && (
+        <div className="whitespace-pre-wrap bg-muted p-4 rounded border text-sm mt-4">
+          <h4 className="font-semibold">Receiver NFTs</h4>
+          {receiveResult}
         </div>
       )}
     </div>
