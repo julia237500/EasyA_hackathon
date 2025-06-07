@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "@axelar-network/axelarjs-sdk": "^0.6.3",
+    "snarkjs": "^0.7.5",
+    "wasmsnark": "^0.0.12",
+    "xrpl": "^4.2.5"
+  }
+}
