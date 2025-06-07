@@ -72,6 +72,11 @@ async function getTokens() {
 }
 
 
+
+
+
+
+
 async function burnToken() {
   // Sender burns token owned by sender
   const send_wallet = xrpl.Wallet.fromSeed(sendSeedField.value)
@@ -107,9 +112,18 @@ async function burnToken() {
   client.disconnect()
 }
 
-async function createToken() {
-  // Sender creates NFT token on their wallet
+
+
+
+
+
+
+
+
+
+async function createLoanNFT() {
   const send_wallet = xrpl.Wallet.fromSeed(sendSeedField.value)
+  const receive_wallet = xrpl.Wallet.fromSeed(receiveSeedField.value)
   const net = getNet()
   const client = new xrpl.Client(net)
 
@@ -120,36 +134,84 @@ async function createToken() {
   results += '\nConnected. Creating NFT...'
   sendResultField.value = results
 
+  // Compose loan metadata using form field values
   const metadata = {
-    loanId: loanIdField.value,
+    sender: send_wallet.classicAddress,
+    receiver: receive_wallet.classicAddress,
     amount: amountField.value,
-    currency: currencyField.value,
-    date: new Date(dateField.value).toISOString(),
-    creditScoreImpact: impactField.value,
-    bankId: bankIdField.value,
-    tokenUrlField: tokenUrlField.value
+    bank: bankIdField.value,
+    dueDate: new Date(dateField.value).toISOString(),
+    currency: currencyField.value
   }
 
   const uri = xrpl.convertStringToHex(JSON.stringify(metadata))
 
-  const transactionBlob = {
-    "TransactionType": "NFTokenMint",
-    "Account": send_wallet.classicAddress,
-    "URI": uri,
-    "Flags": 8, // Transferable
-    "NFTokenTaxon": 0
+  // Mint NFT transaction blob
+  const mintTx = {
+    TransactionType: "NFTokenMint",
+    Account: send_wallet.classicAddress,
+    URI: uri,
+    Flags: 8, // tfTransferable
+    NFTokenTaxon: 0
   }
 
-  const tx = await client.submitAndWait(transactionBlob, { wallet: send_wallet })
+  // Submit mint transaction
+  const mintResult = await client.submitAndWait(mintTx, { wallet: send_wallet })
 
-  results += '\nTransaction result: ' + tx.result.meta.TransactionResult
-  results += '\nBalance changes:\n' + JSON.stringify(xrpl.getBalanceChanges(tx.result.meta), null, 2)
-
+  results += '\nMint Transaction result: ' + mintResult.result.meta.TransactionResult
   sendResultField.value = results
+
+  if (mintResult.result.meta.TransactionResult === "tesSUCCESS") {
+    const affectedNodes = mintResult.result.meta.AffectedNodes
+    let mintedTokenId = null
+
+    for (const node of affectedNodes) {
+      if (node.CreatedNode && node.CreatedNode.LedgerEntryType === "NFTokenPage") {
+        const newFields = node.CreatedNode.NewFields
+        if (newFields && newFields.NFTokens && newFields.NFTokens.length > 0) {
+          mintedTokenId = newFields.NFTokens[0].NFToken.NFTokenID
+          break
+        }
+      }
+    }
+
+    if (!mintedTokenId) {
+      results += '\nError: Could not find minted NFTokenID.'
+      sendResultField.value = results
+      await client.disconnect()
+      return
+    }
+
+    results += `\nMinted NFTokenID: ${mintedTokenId}`
+
+    // Transfer NFT to receiver
+    const transferTx = {
+      TransactionType: "NFTokenTransfer",
+      Account: send_wallet.classicAddress,
+      Destination: receive_wallet.classicAddress,
+      NFTokenID: mintedTokenId
+    }
+
+    const transferResult = await client.submitAndWait(transferTx, { wallet: send_wallet })
+
+    results += '\nTransfer Transaction result: ' + transferResult.result.meta.TransactionResult
+    sendResultField.value = results
+  }
+
   sendBalanceField.value = await client.getXrpBalance(send_wallet.address)
 
-  client.disconnect()
+  await client.disconnect()
 }
+
+
+
+
+
+
+
+
+
+
 
 async function createOffer() {
   const send_wallet = xrpl.Wallet.fromSeed(sendSeedField.value)

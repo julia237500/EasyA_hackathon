@@ -4,119 +4,151 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-
 import * as xrpl from "xrpl"
 
 export default function CreateLoanNFT() {
-  const [sendSeed, setSendSeed] = useState("")
-  const [receiveSeed, setReceiveSeed] = useState("")
-  const [sendResult, setSendResult] = useState("")
-  const [receiveResult, setReceiveResult] = useState("")
+  const [senderSeed, setSenderSeed] = useState("")
+  const [receiverSeed, setReceiverSeed] = useState("")
+  const [standbySeed, setStandbySeed] = useState("")
+  const [loanId, setLoanId] = useState("")
+  const [amount, setAmount] = useState("")
+  const [currency, setCurrency] = useState("USD")
+  const [dueDate, setDueDate] = useState("")
+  const [impact, setImpact] = useState("")
+  const [bankId, setBankId] = useState("")
+  const [tokenUrl, setTokenUrl] = useState("")
+  const [result, setResult] = useState("")
 
   const getNet = () => "wss://s.altnet.rippletest.net:51233"
 
-  const getTokens = async () => {
+  const createLoan = async () => {
     try {
-      const send_wallet = xrpl.Wallet.fromSeed(sendSeed)
-      const receive_wallet = xrpl.Wallet.fromSeed(receiveSeed)
-      const net = getNet()
-      const client = new xrpl.Client(net)
+      const senderWallet = xrpl.Wallet.fromSeed(senderSeed)
+      const receiverWallet = xrpl.Wallet.fromSeed(receiverSeed)
+      const client = new xrpl.Client(getNet())
 
-      let results = "Connecting to " + net + "..."
-      setSendResult(results)
-      setReceiveResult(results)
+      let log = `Connecting to XRPL Testnet...`
+      setResult(log)
 
       await client.connect()
-      results += "\nConnected."
+      log += "\nConnected. Creating NFT..."
+      setResult(log)
 
-      async function getNftInfo(wallet: xrpl.Wallet, label: string) {
-        let output = `\n\nNFTs for ${label} (${wallet.classicAddress}):\n`
-
-        try {
-          const nftsResponse = await client.request({
-            method: "account_nfts",
-            account: wallet.classicAddress,
-          })
-
-          const nfts = nftsResponse.result.account_nfts
-          output += `Found ${nfts.length} NFTs.\n`
-
-          for (let i = 0; i < nfts.length; i++) {
-            const nft = nfts[i]
-            output += `\nNFT ${i + 1}:\n`
-            output += `  TokenID: ${nft.NFTokenID}\n`
-            output += `  URI (hex): ${nft.URI}\n`
-
-            if (nft.URI) {
-              try {
-                const uriString = xrpl.convertHexToString(nft.URI)
-                const metadata = JSON.parse(uriString)
-
-                output += `  Decoded Metadata:\n`
-                output += `    Loan ID: ${metadata.loanId}\n`
-                output += `    Amount: ${metadata.amount}\n`
-                output += `    Currency: ${metadata.currency}\n`
-                output += `    Date: ${new Date(metadata.date).toLocaleString()}\n`
-                output += `    Bank ID: ${metadata.bankId}\n`
-                output += `    Token URL: ${metadata.tokenUrlField}\n`
-
-                if (metadata.senderAddress) {
-                  output += `    Sender Address: ${metadata.senderAddress}\n`
-                }
-              } catch (err: any) {
-                output += `  Error decoding metadata: ${err.message}\n`
-              }
-            } else {
-              output += `  No URI metadata found.\n`
-            }
-          }
-        } catch (err: any) {
-          output += `\nError fetching NFTs: ${err.message}`
-        }
-
-        return output
+      const metadata = {
+        sender: senderWallet.classicAddress,
+        receiver: receiverWallet.classicAddress,
+        amount,
+        bank: bankId,
+        dueDate: new Date(dueDate).toISOString(),
+        currency
       }
 
-      const senderInfo = await getNftInfo(send_wallet, "Sender")
-      const receiverInfo = await getNftInfo(receive_wallet, "Receiver")
+      const uri = xrpl.convertStringToHex(JSON.stringify(metadata))
 
-      setSendResult(results + senderInfo)
-      setReceiveResult(results + receiverInfo)
+      const mintTx: xrpl.NFTokenMint = {
+        TransactionType: "NFTokenMint",
+        Account: senderWallet.classicAddress,
+        URI: uri,
+        Flags: 8, // tfTransferable
+        NFTokenTaxon: 0
+      }
 
+      const mintResult = await client.submitAndWait(mintTx, { wallet: senderWallet })
+      const meta = mintResult.result.meta as xrpl.TransactionMetadata
+
+      const txResult = meta?.TransactionResult
+      log += `\nMint Transaction result: ${txResult}`
+      setResult(log)
+
+      if (txResult === "tesSUCCESS") {
+        const affectedNodes = meta.AffectedNodes
+        let mintedTokenId: string | null = null
+
+        for (const node of affectedNodes) {
+          if ("CreatedNode" in node && node.CreatedNode.LedgerEntryType === "NFTokenPage") {
+            const newFields = node.CreatedNode.NewFields as any
+            const nftokens = newFields?.NFTokens as any[]
+
+            if (Array.isArray(nftokens) && nftokens.length > 0) {
+              mintedTokenId = nftokens[0]?.NFToken?.NFTokenID
+              break
+            }
+          }
+        }
+
+        if (!mintedTokenId) {
+          log += "\nError: Could not find minted NFTokenID."
+          setResult(log)
+          await client.disconnect()
+          return
+        }
+
+  log += `\nMinted NFTokenID: ${mintedTokenId}`
+
+
+        log += `\nMinted NFTokenID: ${mintedTokenId}`
+
+        const offerTx: xrpl.NFTokenCreateOffer = {
+          TransactionType: "NFTokenCreateOffer",
+          Account: senderWallet.classicAddress,
+          NFTokenID: mintedTokenId,
+          Destination: receiverWallet.classicAddress,
+          Amount: "0"
+        }
+
+        const offerResult = await client.submitAndWait(offerTx, { wallet: senderWallet })
+        const offerMeta = offerResult.result.meta as xrpl.TransactionMetadata
+        const offerTxResult = offerMeta?.TransactionResult
+
+        log += `\nCreate Offer Transaction result: ${offerTxResult}`
+      }
+
+      const balance = await client.getXrpBalance(senderWallet.address)
+      log += `\nUpdated Sender Balance: ${balance} XRP`
+
+      setResult(log)
       await client.disconnect()
     } catch (err: any) {
-      setSendResult("Error: " + err.message)
-      setReceiveResult("Error: " + err.message)
+      setResult("Error: " + err.message)
     }
   }
 
   return (
     <div className="space-y-4">
-      <h3 className="text-xl font-semibold">Check Loan NFTs</h3>
+      <h3 className="text-xl font-semibold">Create Loan NFT</h3>
 
       <div className="grid gap-4 md:grid-cols-2">
         <div>
           <Label>Sender Seed</Label>
-          <Input value={sendSeed} onChange={(e) => setSendSeed(e.target.value)} />
+          <Input value={senderSeed} onChange={(e) => setSenderSeed(e.target.value)} />
         </div>
         <div>
           <Label>Receiver Seed</Label>
-          <Input value={receiveSeed} onChange={(e) => setReceiveSeed(e.target.value)} />
+          <Input value={receiverSeed} onChange={(e) => setReceiverSeed(e.target.value)} />
+        </div>
+        <div>
+          <Label>Amount</Label>
+          <Input value={amount} onChange={(e) => setAmount(e.target.value)} />
+        </div>
+        <div>
+          <Label>Bank ID</Label>
+          <Input value={bankId} onChange={(e) => setBankId(e.target.value)} />
+        </div>
+        <div>
+          <Label>Due Date</Label>
+          <Input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+        </div>
+        <div>
+          <Label>Currency</Label>
+          <Input value={currency} onChange={(e) => setCurrency(e.target.value)} />
         </div>
       </div>
 
-      <Button onClick={getTokens}>Get Tokens</Button>
+      <Button onClick={createLoan}>Create Loan NFT</Button>
 
-      {sendResult && (
+      {result && (
         <div className="whitespace-pre-wrap bg-muted p-4 rounded border text-sm mt-4">
-          <h4 className="font-semibold">Sender NFTs</h4>
-          {sendResult}
-        </div>
-      )}
-      {receiveResult && (
-        <div className="whitespace-pre-wrap bg-muted p-4 rounded border text-sm mt-4">
-          <h4 className="font-semibold">Receiver NFTs</h4>
-          {receiveResult}
+          {result}
         </div>
       )}
     </div>

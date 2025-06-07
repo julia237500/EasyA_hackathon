@@ -18,7 +18,7 @@ import { WalletMultiButton } from "@/components/wallet-multi-button";
 import CreateLoanNFT from "@/components/create_loan"
 import GetToken from "@/components/Get_Token";
 
-import CreateOffer from "@/components/ui/create_offer";
+import CreateOffer from "@/components/create_offer";
 import AcceptOffer from "@/components/accept_offer";
 import GetAcceptedOffers from "@/components/get_accepted_offers";
 import GetUnacceptedTokens from "@/components/get_unaccepted_tokens"
