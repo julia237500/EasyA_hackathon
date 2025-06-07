@@ -1,60 +1,205 @@
-const express = require('express');
-const fetch = require('node-fetch'); 
-const app = express();
-app.use(express.json()); 
+// ******************************************************
+// ************* Get the Preferred Network **************
+// ******************************************************   
 
-const PORT = process.env.PORT || 3001;
+function getNet() {
+  let net
+  if (document.getElementById("tn").checked) net = "wss://s.altnet.rippletest.net:51233"
+  if (document.getElementById("dn").checked) net = "wss://s.devnet.rippletest.net:51233"
+  return net
+} // End of getNet()
+              
+// *******************************************************
+// ************* Get Account *****************************
+// *******************************************************
 
-app.post('/api/get-link-token', async (req, res) => {
-  const client_id = process.env.FINVERSE_CLIENT_ID;
-  const client_secret = process.env.FINVERSE_CLIENT_SECRET;
-  const customer_app_id = process.env.FINVERSE_CUSTOMER_APP_ID;
+async function getAccount(type) {
+  let net = getNet()
+      
+  const client = new xrpl.Client(net)
+  results = 'Connecting to ' + net + '....'
+        
+// This uses the default faucet for Testnet/Devnet
+  let faucetHost = null
 
-  try {
-    // Step 1: Get customer token
-    const tokenRes = await fetch("https://api.prod.finverse.net/auth/customer/token", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        client_id,
-        client_secret,
-        grant_type: "client_credentials",
-      }),
-    });
-
-    if (!tokenRes.ok) {
-      throw new Error(`Token request failed: ${tokenRes.statusText}`);
-    }
-
-    const { access_token } = await tokenRes.json();
-
-    // Step 2: Get link token
-    const linkRes = await fetch("https://api.prod.finverse.net/link/token", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${access_token}`,
-      },
-      body: JSON.stringify({
-        customer_app_id,
-        redirect_uri: "https://your-app.com/redirect", // Whitelisted URI
-        ui_mode: "redirect",
-      }),
-    });
-
-    if (!linkRes.ok) {
-      throw new Error(`Link token request failed: ${linkRes.statusText}`);
-    }
-
-    const linkData = await linkRes.json();
-
-    res.status(200).json(linkData);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: error.message || "Internal Server Error" });
+  if (type == 'standby') {
+    standbyResultField.value = results
+  } else {
+    operationalResultField.value = results
   }
-});
+  await client.connect()
+        
+  results += '\nConnected, funding wallet.'
+  if (type == 'standby') {
+    standbyResultField.value = results
+  } else {
+    operationalResultField.value = results
+  }
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// -----------------------------------Create and fund a test account wallet
+  const my_wallet = (await client.fundWallet(null, { faucetHost })).wallet
+        
+  results += '\nGot a wallet.'
+  if (type == 'standby') {
+    standbyResultField.value = results
+  } else {
+    operationalResultField.value = results
+  }       
+      
+// ------------------------------------------------------Get the current balance.
+  const my_balance = (await client.getXrpBalance(my_wallet.address))  
+        
+  if (type == 'standby') {
+    standbyAccountField.value = my_wallet.address
+    standbyBalanceField.value = (await client.getXrpBalance(my_wallet.address))
+    standbySeedField.value = my_wallet.seed
+    results += '\nStandby account created.'
+    standbyResultField.value = results
+  } else {
+    operationalAccountField.value = my_wallet.address
+    operationalSeedField.value = my_wallet.seed
+    operationalBalanceField.value = (await client.getXrpBalance(my_wallet.address))
+    results += '\nOperational account created.'
+    operationalResultField.value = results
+  }
+// --------------- Capture the seeds for both accounts for ease of reload.
+  seeds.value = standbySeedField.value + '\n' + operationalSeedField.value
+  client.disconnect()
+} // End of getAccount()
+      
+// *******************************************************
+// ********** Get Accounts from Seeds ******************** 
+// *******************************************************
+
+async function getAccountsFromSeeds() {
+  let net = getNet()
+  const client = new xrpl.Client(net)
+  results = 'Connecting to ' + getNet() + '....'
+  standbyResultField.value = results
+  await client.connect()
+  results += '\nConnected, finding wallets.\n'
+  standbyResultField.value = results
+      
+// -------------------------------------------------Find the test account wallets.    
+  var lines = seeds.value.split('\n')
+  const standby_wallet = xrpl.Wallet.fromSeed(lines[0])
+  const operational_wallet = xrpl.Wallet.fromSeed(lines[1])
+      
+// -------------------------------------------------------Get the current balance.
+  const standby_balance = (await client.getXrpBalance(standby_wallet.address))  
+  const operational_balance = (await client.getXrpBalance(operational_wallet.address))  
+        
+// ----------------------Populate the fields for Standby and Operational accounts.
+  standbyAccountField.value = standby_wallet.address
+  standbySeedField.value = standby_wallet.seed
+  standbyBalanceField.value = (await client.getXrpBalance(standby_wallet.address))
+      
+  operationalAccountField.value = operational_wallet.address
+  operationalSeedField.value = operational_wallet.seed
+  operationalBalanceField.value = (await client.getXrpBalance(operational_wallet.address))
+      
+  client.disconnect()
+            
+} // End of getAccountsFromSeeds()
+
+// *******************************************************
+// ******************** Send XRP *************************
+// *******************************************************
+
+async function sendXRP() {    
+  results  = "Connecting to the selected ledger.\n"
+  standbyResultField.value = results
+  let net = getNet()
+  results = 'Connecting to ' + getNet() + '....'
+  const client = new xrpl.Client(net)
+  await client.connect()
+      
+  results  += "\nConnected. Sending XRP.\n"
+  standbyResultField.value = results
+      
+  const standby_wallet = xrpl.Wallet.fromSeed(standbySeedField.value)
+  const operational_wallet = xrpl.Wallet.fromSeed(operationalSeedField.value)
+  const sendAmount = standbyAmountField.value
+        
+  results += "\nstandby_wallet.address: = " + standby_wallet.address
+  standbyResultField.value = results
+      
+// -------------------------------------------------------- Prepare transaction
+  const prepared = await client.autofill({
+    "TransactionType": "Payment",
+    "Account": standby_wallet.address,
+    "DeliverMax": xrpl.xrpToDrops(sendAmount),
+    "Destination": standbyDestinationField.value
+  })
+      
+// ------------------------------------------------- Sign prepared instructions
+  const signed = standby_wallet.sign(prepared)
+  
+// -------------------------------------------------------- Submit signed blob
+  const tx = await client.submitAndWait(signed.tx_blob)
+      
+  results  += "\nBalance changes: " + 
+    JSON.stringify(xrpl.getBalanceChanges(tx.result.meta), null, 2)
+  standbyResultField.value = results
+
+  standbyBalanceField.value =  (await client.getXrpBalance(standby_wallet.address))
+  operationalBalanceField.value = (await client.getXrpBalance(operational_wallet.address))                 
+  client.disconnect()    
+} // End of sendXRP()
+   
+// **********************************************************************
+// ****** Reciprocal Transactions ***************************************
+// **********************************************************************
+      
+// *******************************************************
+// ********* Send XRP from Operational account ***********
+// *******************************************************
+      
+async function oPsendXRP() {
+
+  results  = "Connecting to the selected ledger.\n"
+  operationalResultField.value = results
+  let net = getNet()
+  results = 'Connecting to ' + getNet() + '....'
+  const client = new xrpl.Client(net)
+  await client.connect()
+      
+  results  += "\nConnected. Sending XRP.\n"
+  operationalResultField.value = results
+      
+  const operational_wallet = xrpl.Wallet.fromSeed(operationalSeedField.value)
+  const standby_wallet = xrpl.Wallet.fromSeed(standbySeedField.value)
+  const sendAmount = operationalAmountField.value
+        
+  results += "\noperational_wallet.address: = " + operational_wallet.address
+  operationalResultField.value = results
+      
+// ---------------------------------------------------------- Prepare transaction
+  const prepared = await client.autofill({
+    "TransactionType": "Payment",
+    "Account": operational_wallet.address,
+    "DeliverMax": xrpl.xrpToDrops(operationalAmountField.value),
+    "Destination": operationalDestinationField.value
+  })
+
+// ---------------------------------------------------- Sign prepared instructions
+  const signed = operational_wallet.sign(prepared)
+
+// ------------------------------------------------------------ Submit signed blob
+  const tx = await client.submitAndWait(signed.tx_blob)
+      
+  results  += "\nBalance changes: " +
+    JSON.stringify(xrpl.getBalanceChanges(tx.result.meta), null, 2)
+  operationalResultField.value = results
+  standbyBalanceField.value = (await client.getXrpBalance(standby_wallet.address))
+  operationalBalanceField.value = (await client.getXrpBalance(operational_wallet.address))                 
+      
+  client.disconnect()
+      
+} // End of oPsendXRP()
+
+
+
+
+getAccount('standby')      // To create a standby account
+getAccount('operational')  // To create an operational account

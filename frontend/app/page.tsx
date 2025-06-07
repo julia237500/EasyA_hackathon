@@ -10,6 +10,9 @@ import { OnChainActivity } from "@/components/on-chain-activity";
 import { ProofGenerator } from "@/components/proof-generator";
 import { Button } from "@/components/ui/button";
 import { WalletMultiButton } from "@/components/wallet-multi-button";
+import { CreateLoanForm } from "@/components/create-loan-form";
+
+
 
 export default function DashboardPage() {
   return (
@@ -30,6 +33,7 @@ export default function DashboardPage() {
             <TabsTrigger value="connections">Bank Connections</TabsTrigger>
             <TabsTrigger value="onchain">On-Chain Activity</TabsTrigger>
             <TabsTrigger value="proofs">ZK Proofs</TabsTrigger>
+            <TabsTrigger value="create-loan">Create Loan</TabsTrigger>
           </TabsList>
           
           <TabsContent value="overview" className="space-y-4">
@@ -137,6 +141,11 @@ export default function DashboardPage() {
           <TabsContent value="proofs" className="space-y-4">
             <ProofGenerator />
           </TabsContent>
+
+          <TabsContent value="create-loan" className="space-y-4">
+            <CreateLoanForm />
+          </TabsContent>
+
         </Tabs>
       </div>
     </div>
