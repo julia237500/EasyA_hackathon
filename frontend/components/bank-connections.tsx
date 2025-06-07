@@ -2,6 +2,7 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Banknote, Plus } from "lucide-react";
+import axios from "axios";
 
 const banks = [
   {
@@ -44,7 +45,7 @@ export function BankConnections() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Bank Connections</CardTitle>
-          <Button size="sm" className="h-8 gap-1">
+          <Button size="sm" className="h-8 gap-1" onClick={async () => {}}>
             <Plus className="h-3.5 w-3.5" />
             <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
               Connect Bank
