@@ -7,7 +7,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "CreditTrust - Your Decentralized Credit Dashboard",
+  title: "U-PayMan [PROTOTYPE]",
   description: "Aggregate and verify your credit performance across institutions",
 };
 

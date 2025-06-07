@@ -1,6 +1,6 @@
 // app/page.tsx
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs , TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Overview } from "@/components/overview";
 import { RecentTransactions } from "@/components/recent-transactions";
 import { CreditScoreCard } from "@/components/credit-score-card";
@@ -36,7 +36,7 @@ export default function DashboardPage() {
     <div className="flex flex-col">
       <div className="flex-1 space-y-4 p-8 pt-6">
         <div className="flex items-center justify-between space-y-2">
-          <h2 className="text-3xl font-bold tracking-tight">CreditTrust Dashboard</h2>
+          <h2 className="text-3xl font-bold tracking-tight">U-PayMan Prototype</h2>
           <div className="flex items-center space-x-2">
             <WalletMultiButton />
             <Button>Generate ZK Proof</Button>
@@ -46,16 +46,16 @@ export default function DashboardPage() {
         <Tabs defaultValue="overview" className="space-y-4">
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="loans">Loans</TabsTrigger>
+            {/* <TabsTrigger value="loans">Loans</TabsTrigger> */}
             <TabsTrigger value="connections">Bank Connections</TabsTrigger>
-            <TabsTrigger value="onchain">On-Chain Activity</TabsTrigger>
-            <TabsTrigger value="proofs">ZK Proofs</TabsTrigger>
-          <TabsTrigger value="create-offer">Create Offer</TabsTrigger>
-          <TabsTrigger value="unaccepted-tokens">Unaccepted Tokens</TabsTrigger>
-          <TabsTrigger value="accept-offer">Accept Offer</TabsTrigger>
-          <TabsTrigger value="accepted-offers">Accepted Offers</TabsTrigger>
-           <TabsTrigger value="create-loan">Create Loan NFT</TabsTrigger>
-            <TabsTrigger value="get-loan">Get Loan NFT</TabsTrigger>
+            {/* <TabsTrigger value="onchain">On-Chain Activity</TabsTrigger> */}
+            {/* <TabsTrigger value="proofs">ZK Proofs</TabsTrigger> */}
+          {/* <TabsTrigger value="create-offer">Create Offer</TabsTrigger> */}
+          {/* <TabsTrigger value="unaccepted-tokens">Unaccepted Tokens</TabsTrigger> */}
+          {/* <TabsTrigger value="accept-offer">Accept Offer</TabsTrigger> */}
+          {/* <TabsTrigger value="accepted-offers">Accepted Offers</TabsTrigger> */}
+           <TabsTrigger value="create-loan">UPM Testbench</TabsTrigger>
+            {/* <TabsTrigger value="get-loan">Get Loan NFT</TabsTrigger> */}
 
 
           </TabsList>
@@ -150,15 +150,15 @@ export default function DashboardPage() {
             </div>
           </TabsContent>
           
-          <TabsContent value="loans" className="space-y-4">
+          {/* <TabsContent value="loans" className="space-y-4">
             <LoanSummary />
           </TabsContent>
-          
+           */}
           <TabsContent value="connections" className="space-y-4">
             <BankConnections />
           </TabsContent>
           
-          <TabsContent value="onchain" className="space-y-4">
+          {/* <TabsContent value="onchain" className="space-y-4">
             <OnChainActivity />
           </TabsContent>
           
@@ -186,9 +186,9 @@ export default function DashboardPage() {
                 <AcceptOffer />
               </CardContent>
             </Card>
-          </TabsContent>
+          </TabsContent> */}
 
-          <TabsContent value="accepted-offers" className="space-y-4">
+          {/* <TabsContent value="accepted-offers" className="space-y-4">
             <Card>
               <CardHeader>
                 <CardTitle>Accepted Offers</CardTitle>
@@ -201,13 +201,13 @@ export default function DashboardPage() {
 
           <TabsContent value="unaccepted-tokens" className="space-y-4">
             <GetUnacceptedTokens />
-          </TabsContent>
+          </TabsContent> */}
 
 
           <TabsContent value="create-loan" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Create Loan NFT</CardTitle>
+                <CardTitle>U-PayMan (Unified Payments Manager)</CardTitle>
               </CardHeader>
               <CardContent>
                 <CreateLoanNFT />
@@ -215,7 +215,7 @@ export default function DashboardPage() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="get-loan" className="space-y-4">
+          {/* <TabsContent value="get-loan" className="space-y-4">
             <Card>
               <CardHeader>
                 <CardTitle>Get Loan NFT</CardTitle>
@@ -224,7 +224,7 @@ export default function DashboardPage() {
                 <GetToken />
               </CardContent>
             </Card>
-          </TabsContent>
+          </TabsContent> */}
 
 
 
