@@ -8,7 +8,7 @@ To democratise financial reliability, by giving individuals full control, visibi
 ![Alt text](Submission_Media/Generate_LoanMPToken.png)
 ![Alt text](Submission_Media/Generate_PaymentMPToken.png)
 ![Alt text](Submission_Media/Generate_Wallet.png)
-![Alt text](Submission_Media/Loan_Portfolio.png)
+![Alt text](Submission_Media/Loan_Porfolio.png)
 ![Alt text](Submission_Media/Testbench_Main.png)
 ![Alt text](Submission_Media/ZKProof.png)
 
