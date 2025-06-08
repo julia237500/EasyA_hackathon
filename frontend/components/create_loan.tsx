@@ -17,6 +17,8 @@ import {
   ResponsiveContainer,
 } from "recharts"
 
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
+
 import * as xrpl from "xrpl"
 
 interface LoanToken {
@@ -31,7 +33,7 @@ interface LoanToken {
   txResult?: string
   nftId?: string
   repayments?: Repayment[]
-  deadline?: string // Added for deadline simulation
+  deadline?: string
 }
 
 interface Repayment {
@@ -64,6 +66,14 @@ interface Activity {
   loanId?: string
 }
 
+interface ZKProofResult {
+  proof: string
+  publicInputs: string[]
+  verificationResult: boolean
+  loanId: string
+  timestamp: string
+}
+
 export default function CreateLoanNFT() {
   const [result, setResult] = useState("")
   const [loanTokens, setLoanTokens] = useState<LoanToken[]>([])
@@ -80,6 +90,9 @@ export default function CreateLoanNFT() {
     loanDistribution: []
   })
   const [simulationDate, setSimulationDate] = useState<string>(new Date().toISOString().split('T')[0])
+  const [zkProofResults, setZkProofResults] = useState<ZKProofResult[]>([])
+  const [zkLoanId, setZkLoanId] = useState<string>("")
+  const [zkVerificationMessage, setZkVerificationMessage] = useState<string>("")
 
   const getNet = () => "wss://s.altnet.rippletest.net:51233"
 
@@ -94,7 +107,7 @@ export default function CreateLoanNFT() {
       bankId: "BANK-001",
       tokenUrl: "https://example.com/loans/LN-2023-001",
       repayments: [],
-      deadline: "2024-05-15" // 1 year term
+      deadline: "2024-05-15"
     },
     {
       loanId: "LN-2023-002",
@@ -105,7 +118,7 @@ export default function CreateLoanNFT() {
       bankId: "BANK-002",
       tokenUrl: "https://example.com/loans/LN-2023-002",
       repayments: [],
-      deadline: "2024-06-20" // 1 year term
+      deadline: "2024-06-20"
     },
     {
       loanId: "LN-2023-003",
@@ -116,7 +129,7 @@ export default function CreateLoanNFT() {
       bankId: "BANK-003",
       tokenUrl: "https://example.com/loans/LN-2023-003",
       repayments: [],
-      deadline: "2024-07-10" // 1 year term
+      deadline: "2024-07-10"
     }
   ]
 
@@ -131,11 +144,10 @@ export default function CreateLoanNFT() {
     const completedLoans = totalLoans - activeLoans
     
     const repaymentRate = totalLoans > 0 ? 
-      Math.round((repaymentsCompleted / (totalLoans * 12)) * 100) : 0 // Assuming 12 payments per loan
+      Math.round((repaymentsCompleted / (totalLoans * 12)) * 100) : 0
     
     const recentActivity: Activity[] = []
     
-    // Add loans to activity
     loanTokens.forEach(loan => {
       recentActivity.push({
         type: 'loan',
@@ -145,7 +157,6 @@ export default function CreateLoanNFT() {
         date: loan.date
       })
       
-      // Add repayments to activity
       loan.repayments?.forEach(repayment => {
         recentActivity.push({
           type: 'repayment',
@@ -158,13 +169,9 @@ export default function CreateLoanNFT() {
       })
     })
     
-    // Sort by date (newest first)
     recentActivity.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     
-    // Generate repayment trends data
     const repaymentTrends = generateRepaymentTrends(loanTokens)
-    
-    // Generate loan distribution data
     const loanDistribution = generateLoanDistribution(loanTokens)
     
     setDashboardStats({
@@ -174,13 +181,12 @@ export default function CreateLoanNFT() {
       repaymentRate,
       activeLoans,
       completedLoans,
-      recentActivity: recentActivity.slice(0, 5), // Show only 5 most recent
+      recentActivity: recentActivity.slice(0, 5),
       repaymentTrends,
       loanDistribution
     })
   }, [loanTokens])
 
-  // Generate repayment trends data for the chart
   const generateRepaymentTrends = (loans: LoanToken[]) => {
     const trends: { [key: string]: { repayments: number; amount: number } } = {}
     
@@ -207,7 +213,6 @@ export default function CreateLoanNFT() {
       .sort((a, b) => a.month.localeCompare(b.month))
   }
 
-  // Generate loan distribution data for the chart
   const generateLoanDistribution = (loans: LoanToken[]) => {
     const distribution: { [key: string]: { amount: number; count: number } } = {}
     
@@ -228,7 +233,6 @@ export default function CreateLoanNFT() {
       }))
   }
 
-  // Run deadline simulation
   const runDeadlineSimulation = () => {
     const simDate = new Date(simulationDate)
     const updatedLoans = loanTokens.map(loan => {
@@ -250,6 +254,50 @@ export default function CreateLoanNFT() {
     
     setLoanTokens(updatedLoans)
     setResult(`Deadline simulation run for date: ${simulationDate}. Check loan statuses.`)
+  }
+
+  // Simulate ZK proof generation
+  const generateZKProof = (loanId: string) => {
+    if (!loanTokens.some(loan => loan.loanId === loanId)) {
+      setZkVerificationMessage("Loan ID not found")
+      return
+    }
+
+    // Simulate proof generation (in a real app, this would use a zk-SNARKs library)
+    const proof = {
+      a: ["0x" + Math.random().toString(16).substr(2, 16), "0x" + Math.random().toString(16).substr(2, 16)],
+      b: [["0x" + Math.random().toString(16).substr(2, 16), "0x" + Math.random().toString(16).substr(2, 16)]], 
+      c: ["0x" + Math.random().toString(16).substr(2, 16), "0x" + Math.random().toString(16).substr(2, 16)]
+    }
+
+    const publicInputs = [
+      "0x" + Math.random().toString(16).substr(2, 16),
+      "0x" + Math.random().toString(16).substr(2, 16)
+    ]
+
+    // Always verify successfully in this simulation
+    const verificationResult = true
+
+    const newProofResult: ZKProofResult = {
+      proof: JSON.stringify(proof, null, 2),
+      publicInputs,
+      verificationResult,
+      loanId,
+      timestamp: new Date().toISOString()
+    }
+
+    setZkProofResults(prev => [newProofResult, ...prev])
+    setZkVerificationMessage(`ZK proof generated for loan ${loanId} and verified successfully!`)
+  }
+
+  // Simulate ZK proof verification
+  const verifyZKProof = (proof: ZKProofResult) => {
+    // In this simulation, we just return the stored verification result
+    setZkVerificationMessage(
+      proof.verificationResult 
+        ? `Proof for loan ${proof.loanId} verified successfully!`
+        : `Proof for loan ${proof.loanId} verification failed!`
+    )
   }
 
   const generateWallet = async () => {
@@ -288,7 +336,6 @@ export default function CreateLoanNFT() {
 
       for (const loan of sampleLoans) {
         try {
-          // Create metadata
           const metadata = {
             loanId: loan.loanId,
             amount: loan.amount,
@@ -363,12 +410,10 @@ export default function CreateLoanNFT() {
       const client = new xrpl.Client(getNet())
       await client.connect()
 
-      // Calculate repayment amount (10% of loan amount for demo)
       const repaymentAmount = (parseInt(loan.amount) * 0.1).toFixed(2)
       const remainingBalance = (parseInt(loan.amount) * 0.9).toFixed(2)
       const repaymentDate = new Date().toISOString()
 
-      // Create repayment metadata
       const metadata = {
         loanId: loan.loanId,
         repaymentAmount: repaymentAmount,
@@ -397,7 +442,6 @@ export default function CreateLoanNFT() {
       const txResult = (tx.result.meta as xrpl.TransactionMetadata).TransactionResult
       const nftId = (tx.result as any).NFTokenID
 
-      // Update loan with new repayment
       const updatedLoans = loanTokens.map(l => {
         if (l.loanId === loanId) {
           const repayment: Repayment = {
@@ -411,7 +455,7 @@ export default function CreateLoanNFT() {
           return {
             ...l,
             repayments: [...(l.repayments || []), repayment],
-            amount: remainingBalance // Update remaining balance
+            amount: remainingBalance
           }
         }
         return l
@@ -455,6 +499,98 @@ export default function CreateLoanNFT() {
         </div>
       )}
 
+      {/* ZK Proof Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Zero-Knowledge Proof Simulation</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-4">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="w-[300px] justify-start">
+                  {zkLoanId ? (
+                    loanTokens.find((loan) => loan.loanId === zkLoanId)?.loanId + 
+                    " - " + 
+                    loanTokens.find((loan) => loan.loanId === zkLoanId)?.amount + 
+                    " " + 
+                    loanTokens.find((loan) => loan.loanId === zkLoanId)?.currency
+                  ) : (
+                    "Select a Loan"
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-[300px]">
+                <DropdownMenuLabel>Available Loans</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {loanTokens.map((loan) => (
+                  <DropdownMenuItem 
+                    key={loan.loanId} 
+                    onClick={() => setZkLoanId(loan.loanId)}
+                  >
+                    {loan.loanId} - {loan.amount} {loan.currency}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button 
+              onClick={() => generateZKProof(zkLoanId)}
+              disabled={!zkLoanId}
+            >
+              Generate Proof
+            </Button>
+          </div>
+          {zkVerificationMessage && (
+            <div className={`p-3 rounded ${
+              zkVerificationMessage.includes("failed") 
+                ? "bg-red-100 text-red-800" 
+                : "bg-green-100 text-green-800"
+            }`}>
+              {zkVerificationMessage}
+            </div>
+          )}
+          <div className="mt-4">
+            <h4 className="font-medium mb-2">Generated Proofs</h4>
+            <div className="space-y-2">
+              {zkProofResults.length > 0 ? (
+                zkProofResults.map((proof, index) => (
+                  <div key={index} className="p-3 border rounded">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="font-medium">Loan: {proof.loanId}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(proof.timestamp).toLocaleString()}
+                        </p>
+                      </div>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => verifyZKProof(proof)}
+                      >
+                        Verify Proof
+                      </Button>
+                    </div>
+                    <details className="mt-2">
+                      <summary className="cursor-pointer text-sm text-muted-foreground">
+                        View Proof Details
+                      </summary>
+                      <pre className="mt-1 p-2 bg-muted rounded text-xs overflow-auto">
+                        {proof.proof}
+                      </pre>
+                    </details>
+                  </div>
+                ))
+              ) : (
+                <p className="text-muted-foreground text-sm">No proofs generated yet</p>
+              )}
+            </div>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            This simulates generating and verifying zk-SNARK proofs for loan data privacy.
+            In a real implementation, this would use a library like SnarkJS.
+          </p>
+        </CardContent>
+      </Card>
       {/* Deadline Simulation */}
       <Card>
         <CardHeader>
