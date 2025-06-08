@@ -13,7 +13,7 @@ To democratise financial reliability, by giving individuals full control, visibi
 ![Alt text](Submission_Media/ZKProof.png)
 
 ## Demo video
-
+![Alt text](Submission_Media/U_payman.mp4)
 
 ## How it connects to XRP Ledger
 when users make a loean repayment, an payment MPToken is minted and sent to the payment recipient in order to maintain consistent and immutable proof of payment on the blockchain.
