@@ -2,6 +2,7 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Banknote, Plus } from "lucide-react";
+import axios from "axios";
 
 const banks = [
   {
