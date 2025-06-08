@@ -1,6 +1,6 @@
 // app/page.tsx
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs , TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Overview } from "@/components/overview";
 import { RecentTransactions } from "@/components/recent-transactions";
 import { CreditScoreCard } from "@/components/credit-score-card";
@@ -11,25 +11,49 @@ import { ProofGenerator } from "@/components/proof-generator";
 import { Button } from "@/components/ui/button";
 import { WalletMultiButton } from "@/components/wallet-multi-button";
 
+
+// components/mint.tsx
+
+
+import CreateLoanNFT from "@/components/create_loan"
+import GetToken from "@/components/Get_Token";
+
+import CreateOffer from "@/components/ui/create_offer";
+import AcceptOffer from "@/components/accept_offer";
+import GetAcceptedOffers from "@/components/get_accepted_offers";
+import GetUnacceptedTokens from "@/components/get_unaccepted_tokens"
+
+
+
+
+
+
+
+
+
 export default function DashboardPage() {
   return (
     <div className="flex flex-col">
       <div className="flex-1 space-y-4 p-8 pt-6">
         <div className="flex items-center justify-between space-y-2">
-          <h2 className="text-3xl font-bold tracking-tight">CreditTrust Dashboard</h2>
-          <div className="flex items-center space-x-2">
-            <WalletMultiButton />
-            <Button>Generate ZK Proof</Button>
-          </div>
+          <h2 className="text-3xl font-bold tracking-tight center">U-PayMan Prototype</h2>
         </div>
         
         <Tabs defaultValue="overview" className="space-y-4">
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="loans">Loans</TabsTrigger>
+            {/* <TabsTrigger value="loans">Loans</TabsTrigger> */}
             <TabsTrigger value="connections">Bank Connections</TabsTrigger>
-            <TabsTrigger value="onchain">On-Chain Activity</TabsTrigger>
-            <TabsTrigger value="proofs">ZK Proofs</TabsTrigger>
+            {/* <TabsTrigger value="onchain">On-Chain Activity</TabsTrigger> */}
+            {/* <TabsTrigger value="proofs">ZK Proofs</TabsTrigger> */}
+          {/* <TabsTrigger value="create-offer">Create Offer</TabsTrigger> */}
+          {/* <TabsTrigger value="unaccepted-tokens">Unaccepted Tokens</TabsTrigger> */}
+          {/* <TabsTrigger value="accept-offer">Accept Offer</TabsTrigger> */}
+          {/* <TabsTrigger value="accepted-offers">Accepted Offers</TabsTrigger> */}
+           <TabsTrigger value="create-loan">UPM Testbench</TabsTrigger>
+            {/* <TabsTrigger value="get-loan">Get Loan NFT</TabsTrigger> */}
+
+
           </TabsList>
           
           <TabsContent value="overview" className="space-y-4">
@@ -122,21 +146,84 @@ export default function DashboardPage() {
             </div>
           </TabsContent>
           
-          <TabsContent value="loans" className="space-y-4">
+          {/* <TabsContent value="loans" className="space-y-4">
             <LoanSummary />
           </TabsContent>
-          
+           */}
           <TabsContent value="connections" className="space-y-4">
             <BankConnections />
           </TabsContent>
           
-          <TabsContent value="onchain" className="space-y-4">
+          {/* <TabsContent value="onchain" className="space-y-4">
             <OnChainActivity />
           </TabsContent>
           
           <TabsContent value="proofs" className="space-y-4">
             <ProofGenerator />
           </TabsContent>
+
+          <TabsContent value="create-offer" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Create NFT Offer</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CreateOffer />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="accept-offer" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Accept NFT Offer</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <AcceptOffer />
+              </CardContent>
+            </Card>
+          </TabsContent> */}
+
+          {/* <TabsContent value="accepted-offers" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Accepted Offers</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <GetAcceptedOffers />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="unaccepted-tokens" className="space-y-4">
+            <GetUnacceptedTokens />
+          </TabsContent> */}
+
+
+          <TabsContent value="create-loan" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>U-PayMan (Unified Payments Manager)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CreateLoanNFT />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* <TabsContent value="get-loan" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Get Loan NFT</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <GetToken />
+              </CardContent>
+            </Card>
+          </TabsContent> */}
+
+
+
         </Tabs>
       </div>
     </div>

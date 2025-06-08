@@ -1,0 +1,10 @@
+{
+  "name": "Repayment NFT",
+  "description": "Proof of loan repayment",
+  "attributes": [
+    { "trait_type": "loanId", "value": "abc123" },
+    { "trait_type": "amount", "value": 1500 },
+    { "trait_type": "currency", "value": "USD" },
+    { "trait_type": "creditScoreImpact", "value": 5 }
+  ]
+}

@@ -44,8 +44,8 @@ export function BankConnections() {
     <div className="space-y-4">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Bank Connections</CardTitle>
-          <Button size="sm" className="h-8 gap-1" onClick={async () => {}}>
+          <CardTitle>Finverse Authentications</CardTitle>
+          <Button size="sm" className="h-8 gap-1">
             <Plus className="h-3.5 w-3.5" />
             <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
               Connect Bank
@@ -54,6 +54,8 @@ export function BankConnections() {
         </CardHeader>
         <CardContent>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <p>[PROTOTYPE] The following page shows how connections can be made to a Finverse API. 
+            Clicking on connect bank in the actual bank will trigger an OAuth with Finverse to authenticate connection to individual bank accounts. </p>
             {banks.map((bank) => (
               <Card key={bank.id}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
