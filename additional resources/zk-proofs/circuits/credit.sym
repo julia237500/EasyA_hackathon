@@ -1,0 +1,5 @@
+1,1,0,main.creditScore
+2,-1,0,main.totalLoans
+3,2,0,main.onTimePayments
+4,3,0,main.latePayments
+5,4,0,main.creditUtilization

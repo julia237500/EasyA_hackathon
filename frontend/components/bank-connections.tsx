@@ -2,7 +2,6 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Banknote, Plus } from "lucide-react";
-import axios from "axios";
 
 const banks = [
   {
@@ -55,7 +54,7 @@ export function BankConnections() {
         <CardContent>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             <p>[PROTOTYPE] The following page shows how connections can be made to a Finverse API. 
-            Clicking on connect bank in the actual bank will trigger an OAuth with Finverse to authenticate connection to individual bank accounts. </p>
+            Clicking on "Connect Bank" in the actual application will trigger an OAuth with Finverse to authenticate connection to individual bank accounts. </p>
             {banks.map((bank) => (
               <Card key={bank.id}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

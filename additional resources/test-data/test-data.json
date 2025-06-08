@@ -1,0 +1,112 @@
+[
+  {
+    "loanId": "LN-2026-001",
+    "amount": "42000",
+    "currency": "SGD",
+    "date": "2026-01-10",
+    "impact": "17",
+    "bankId": "DBS",
+    "tokenUrl": "https://example.com/loans/LN-2026-DBS",
+    "repayments": [],
+    "deadline": "2027-01-10"
+  },
+  {
+    "loanId": "LN-2025-004",
+    "amount": "68000",
+    "currency": "USD",
+    "date": "2025-04-22",
+    "impact": "19",
+    "bankId": "OCBC",
+    "tokenUrl": "https://example.com/loans/LN-2025-OCBC",
+    "repayments": [],
+    "deadline": "2026-04-22"
+  },
+  {
+    "loanId": "LN-2024-007",
+    "amount": "115000",
+    "currency": "EUR",
+    "date": "2024-07-15",
+    "impact": "23",
+    "bankId": "HSBC",
+    "tokenUrl": "https://example.com/loans/LN-2024-HSBC",
+    "repayments": [],
+    "deadline": "2025-07-15"
+  },
+  {
+    "loanId": "LN-2024-002",
+    "amount": "55000",
+    "currency": "GBP",
+    "date": "2024-02-28",
+    "impact": "15",
+    "bankId": "STANDARD_CHARTERED",
+    "tokenUrl": "https://example.com/loans/LN-2024-SC",
+    "repayments": [],
+    "deadline": "2025-02-28"
+  },
+  {
+    "loanId": "LN-2023-009",
+    "amount": "75000",
+    "currency": "AUD",
+    "date": "2023-09-30",
+    "impact": "18",
+    "bankId": "ANZ",
+    "tokenUrl": "https://example.com/loans/LN-2023-ANZ",
+    "repayments": [],
+    "deadline": "2024-09-30"
+  },
+  {
+    "loanId": "LN-2023-003",
+    "amount": "92000",
+    "currency": "USD",
+    "date": "2023-03-18",
+    "impact": "20",
+    "bankId": "CITIBANK",
+    "tokenUrl": "https://example.com/loans/LN-2023-CITI",
+    "repayments": [],
+    "deadline": "2024-03-18"
+  },
+  {
+    "loanId": "LN-CURRENT-001",
+    "amount": "48000",
+    "currency": "EUR",
+    "date": "2023-11-21",  
+    "impact": "16",
+    "bankId": "UOB",
+    "tokenUrl": "https://example.com/loans/LN-CURRENT-UOB",
+    "repayments": [],
+    "deadline": "2024-11-21"
+  },
+  {
+    "loanId": "LN-2025-010",
+    "amount": "135000",
+    "currency": "JPY",
+    "date": "2025-06-08",
+    "impact": "24",
+    "bankId": "BANK_OF_CHINA",
+    "tokenUrl": "https://example.com/loans/LN-2025-BOC",
+    "repayments": [],
+    "deadline": "2026-10-05"
+  },
+  {
+    "loanId": "LN-2024-005",
+    "amount": "62000",
+    "currency": "CAD",
+    "date": "2024-05-14",
+    "impact": "17",
+    "bankId": "MAYBANK",
+    "tokenUrl": "https://example.com/loans/LN-2024-MAYBANK",
+    "repayments": [],
+    "deadline": "2025-05-14"
+  },
+  {
+    "loanId": "LN-2026-003",
+    "amount": "88000",
+    "currency": "HKD",
+    "date": "2026-03-08",
+    "impact": "21",
+    "bankId": "BANK_OF_AMERICA",
+    "tokenUrl": "https://example.com/loans/LN-2026-BOA",
+    "repayments": [],
+    "deadline": "2027-03-08"
+  }
+]

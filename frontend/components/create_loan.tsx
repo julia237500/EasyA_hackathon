@@ -99,37 +99,37 @@ export default function CreateLoanNFT() {
   // Sample loan data with deadlines
   const sampleLoans: LoanToken[] = [
     {
-      loanId: "LN-2023-001",
+      loanId: "LN-2025-001",
       amount: "50000",
       currency: "USD",
-      date: "2023-05-15",
+      date: "2025-05-15",
       impact: "15",
       bankId: "BANK-001",
       tokenUrl: "https://example.com/loans/LN-2023-001",
       repayments: [],
-      deadline: "2024-05-15"
+      deadline: "2025-05-15"
     },
     {
-      loanId: "LN-2023-002",
+      loanId: "LN-2026-002",
       amount: "75000",
       currency: "EUR",
-      date: "2023-06-20",
+      date: "2026-06-20",
       impact: "20",
       bankId: "BANK-002",
       tokenUrl: "https://example.com/loans/LN-2023-002",
       repayments: [],
-      deadline: "2024-06-20"
+      deadline: "2026-06-20"
     },
     {
-      loanId: "LN-2023-003",
+      loanId: "LN-2025-003",
       amount: "100000",
       currency: "GBP",
-      date: "2023-07-10",
+      date: "2025-06-08",
       impact: "25",
       bankId: "BANK-003",
       tokenUrl: "https://example.com/loans/LN-2023-003",
       repayments: [],
-      deadline: "2024-07-10"
+      deadline: "2025-06-08"
     }
   ]
 
@@ -234,27 +234,32 @@ export default function CreateLoanNFT() {
   }
 
   const runDeadlineSimulation = () => {
-    const simDate = new Date(simulationDate)
-    const updatedLoans = loanTokens.map(loan => {
-      if (loan.deadline) {
-        const deadlineDate = new Date(loan.deadline)
-        const isOverdue = simDate > deadlineDate && parseFloat(loan.amount) > 0
-        
-        return {
-          ...loan,
-          metadata: loan.metadata ? JSON.stringify({
-            ...JSON.parse(loan.metadata),
-            status: isOverdue ? 'OVERDUE' : 'ACTIVE',
-            daysRemaining: Math.ceil((deadlineDate.getTime() - simDate.getTime()) / (1000 * 60 * 60 * 24))
-          }, null, 2) : loan.metadata
-        }
-      }
-      return loan
-    })
+  const simDate = new Date(simulationDate);
+  const updatedLoans = loanTokens.map(loan => {
+    if (!loan.deadline) return loan;
     
-    setLoanTokens(updatedLoans)
-    setResult(`Deadline simulation run for date: ${simulationDate}. Check loan statuses.`)
-  }
+    const deadlineDate = new Date(loan.deadline);
+    const daysRemaining = Math.ceil((deadlineDate.getTime() - simDate.getTime()) / (1000 * 60 * 60 * 24));
+    const isOverdue = daysRemaining < 0 && parseFloat(loan.amount) > 0;
+    const isActive = parseFloat(loan.amount) > 0;
+    
+    const loanMetadata = loan.metadata ? JSON.parse(loan.metadata) : {};
+    
+    return {
+      ...loan,
+      metadata: JSON.stringify({
+        ...loanMetadata,
+        status: !isActive ? 'COMPLETED' : isOverdue ? 'OVERDUE' : 'ACTIVE',
+        daysRemaining: isActive ? daysRemaining : 0,
+        originalDeadline: loan.deadline,
+        simulatedDate: simulationDate
+      }, null, 2)
+    };
+  });
+
+  setLoanTokens(updatedLoans);
+  setResult(`Deadline simulation run for date: ${simulationDate}. ${updatedLoans.filter(l => JSON.parse(l.metadata || '{}').status === 'OVERDUE').length} loans marked as overdue.`);
+};
 
   // Simulate ZK proof generation
   const generateZKProof = (loanId: string) => {
@@ -473,9 +478,11 @@ export default function CreateLoanNFT() {
 
   return (
     <div className="space-y-6">
-      <h3 className="text-xl font-semibold">Loan NFT Manager</h3>
+      <h3 className="text-xl font-semibold">U-PayMan Testbench</h3>
       <p className="text-muted-foreground">
-        Create loan NFTs and track monthly repayments on the XRPL Testnet
+        This testbench allows you to simulate the credit information creation & storage on the blockchain.
+        You can generate a test wallet, create sample loans, and simulate ZK proofs and deadlines.
+        Note: In actual application, loan information and payment history would be retrieved directly from Finverse to create Payment MPTokens
       </p>
 
       <div className="flex gap-2">
@@ -815,11 +822,6 @@ export default function CreateLoanNFT() {
                         <p><span className="text-muted-foreground">Deadline:</span> {new Date(token.deadline).toLocaleDateString()}</p>
                       )}
                       <p><span className="text-muted-foreground">Status:</span> {token.txResult || "Pending"}</p>
-                      {token.nftId && (
-                        <p className="break-all text-xs">
-                          <span className="text-muted-foreground">NFT ID:</span> {token.nftId}
-                        </p>
-                      )}
                       <div className="mt-3">
                         <Button 
                           size="sm" 
@@ -840,11 +842,6 @@ export default function CreateLoanNFT() {
                               <p><span className="text-muted-foreground">Date:</span> {new Date(repayment.date).toLocaleDateString()}</p>
                               <p><span className="text-muted-foreground">Amount:</span> {repayment.amount} {token.currency}</p>
                               <p><span className="text-muted-foreground">Remaining:</span> {repayment.remainingBalance}</p>
-                              {repayment.nftId && (
-                                <p className="break-all">
-                                  <span className="text-muted-foreground">NFT ID:</span> {repayment.nftId}
-                                </p>
-                              )}
                               {repayment.metadata && (
                                 <details className="mt-1">
                                   <summary className="cursor-pointer text-muted-foreground">Details</summary>
