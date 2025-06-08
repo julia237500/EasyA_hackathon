@@ -4,7 +4,7 @@ To democratise financial reliability, by giving individuals full control, visibi
 
 ## UI screenshots
 
-![Dashboard](Submission_Media/Dashboard.png)
+[![Alt text](Submission_Media/Dashboard.png)]
 
 ## Demo video
 
